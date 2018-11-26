@@ -8,6 +8,8 @@ Project members: Sambath Pich and Cyprian Nwachukwu
  */
 import java.net.*;
 import java.io.*;
+import java.util.List;
+import java.util.Set;
 
 
 public class CacheNode {
@@ -28,4 +30,15 @@ public class CacheNode {
             cache.put(object.getName(), object);
         }
     }
+
+    public synchronized static List<SavedObject> uncaching() throws Exception{
+        /*
+        add all SavedObject instances to a list, and return the list of SavedObjects to be sent to
+        cloud-server
+         */
+       List<SavedObject> sendToServer = cache.cleanFIFO();
+        return sendToServer;
+    }
+
+
 }

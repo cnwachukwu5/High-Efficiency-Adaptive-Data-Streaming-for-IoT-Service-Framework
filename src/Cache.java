@@ -64,29 +64,30 @@ public class Cache<K,V> {
     }
 
     @SuppressWarnings("unchecked")
-    public void cleanFIFO(){
+    public List<V> cleanFIFO(){
 
-        ArrayList<K> cacheObjectList = null;
+        ArrayList<V> cacheObjectList = null;
 
         synchronized(cacheMap){
             Set cacheSet = cacheMap.entrySet();//Return all cached items as a set
             Iterator itr = cacheSet.iterator(); //create an iterator to loop through the set
-            cacheObjectList = new ArrayList<K>();
+            cacheObjectList = new ArrayList<V>();
 
-            K key = null;
+            V value = null;
             CachedObject c = null;
 
             while (itr.hasNext()) {
                 Map.Entry mentry = (Map.Entry)itr.next();
-                key = (K) mentry.getKey();
+                value = (V) mentry.getValue();
 
                 //Add item key to the list
-                cacheObjectList.add(key);
+                cacheObjectList.add(value);
             }
 
             //Removed the first object in cache (FIFO)
-            c = (CachedObject)cacheMap.get(cacheObjectList.get(0)); //Object evicted
-            cacheMap.remove(cacheObjectList.get(0));
+            cacheMap.clear();
         }//End of synchronized block
+
+        return cacheObjectList;
     }
 }
