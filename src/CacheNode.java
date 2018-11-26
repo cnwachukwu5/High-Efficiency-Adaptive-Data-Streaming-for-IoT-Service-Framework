@@ -36,8 +36,7 @@ public class CacheNode {
         add all SavedObject instances to a list, and return the list of SavedObjects to be sent to
         cloud-server
          */
-       List<SavedObject> sendToServer = cache.cleanFIFO();
-        return sendToServer;
+        return cache.cleanFIFO();
     }
 
 
