@@ -14,8 +14,8 @@ import java.util.Set;
 
 public class CacheNode {
 
-    private static ServerSocket serverSocket;
     private static Cache<String, SavedObject> cache; //Memory caching
+    private static ServerSocket serverSocket;//Socket for client connection
 
     public synchronized static void caching(SavedObject object) throws Exception{
         /*
@@ -38,6 +38,30 @@ public class CacheNode {
          */
         return cache.cleanFIFO();
     }
+    private static void init(){
+        int port = 10567;
+        try{
+            serverSocket = new ServerSocket(port);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
+    }
 
+    public static void main(String[] args) {
+        int maxNumOfCachedItem = 10;
+        cache = new Cache<String, SavedObject>(maxNumOfCachedItem);
+        init();
+        Socket client = null;
+        while (true) {
+            try {
+                client = serverSocket.accept(); //Accept client connection
+                new Thread(new Threads(client));
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
+
+    }
 }
