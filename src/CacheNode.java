@@ -24,10 +24,10 @@ public class CacheNode {
          */
         SavedObject sentObject;
 
-        if((sentObject = cache.get(object.getName())) != null ){
+        if((sentObject = cache.get(object.getFile().getName())) != null ){
             System.out.println("Object already exists");
         }else{
-            cache.put(object.getName(), object);
+            cache.put(object.getFile().getName(), object);
         }
     }
 
@@ -59,7 +59,6 @@ public class CacheNode {
                 new Thread(new Threads(client));
             } catch (Exception e) {
                 e.printStackTrace();
-                continue;
             }
         }
 

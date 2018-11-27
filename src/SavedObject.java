@@ -1,19 +1,48 @@
+
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
+import java.io.DataInputStream;
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class SavedObject {
 
     private String name;
     private File file;
     private LocalDateTime timeSent;
+    private DataInputStream reader;
 
-    public SavedObject(File file, LocalDateTime timeSent){
-        this.file = file;
-        this.timeSent = timeSent;
-        this.name = file.getName();
+    public SavedObject(DataInputStream reader){
+
+        synchronized (this){
+            this.file = null;
+            this.timeSent = LocalDateTime.now();
+
+            this.reader = reader;
+            try{
+                byte[] bytes = IOUtils.toByteArray(reader);
+                this.name = generateFileName();
+                this.file = new File(this.name);
+                FileUtils.writeByteArrayToFile(this.file, bytes);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
+
+
     }
 
-    public String getName() {
+    private String generateFileName(){
+        String name = UUID.randomUUID().toString();
+        name = name.replace("-","");
+        return name;
+    }
+
+    private String getName() {
         return name;
     }
 
