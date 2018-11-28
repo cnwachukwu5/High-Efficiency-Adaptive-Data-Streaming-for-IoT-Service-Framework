@@ -38,6 +38,14 @@ public class CacheNode {
          */
         return cache.cleanFIFO();
     }
+
+    public synchronized static double percentCacheSize(){
+
+            int cacheSize = cache.size();
+            return ((cacheSize*1.0)/cache.getMaxNumItems()) * 100;
+
+    }
+
     private static void init(){
         int port = 10567;
         try{
@@ -55,8 +63,11 @@ public class CacheNode {
         Socket client = null;
         while (true) {
             try {
+                System.out.println("waiting for IoTNode connection ...");
                 client = serverSocket.accept(); //Accept client connection
-                new Thread(new Threads(client));
+                System.out.println("Connection established ...");
+                new Thread(new Threads(client)).start();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

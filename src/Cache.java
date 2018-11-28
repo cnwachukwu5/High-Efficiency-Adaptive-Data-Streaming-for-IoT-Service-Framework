@@ -63,6 +63,7 @@ public class Cache<K,V> {
         }
     }
 
+
     @SuppressWarnings("unchecked")
     public List<V> cleanFIFO(){
 
@@ -89,5 +90,13 @@ public class Cache<K,V> {
         }//End of synchronized block
 
         return cacheObjectList;
+    }
+
+    public int getMaxNumItems() {
+        return maxNumItems;
+    }
+
+    public void setMaxNumItems(int maxNumItems) {
+        this.maxNumItems = maxNumItems;
     }
 }

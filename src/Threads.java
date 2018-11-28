@@ -13,31 +13,49 @@ public class Threads implements Runnable {
     @Override
     public void run(){
         Socket connect_CloudServer;
+
         try{
-            DataOutputStream toIoTNodes = new DataOutputStream(client.getOutputStream()); //Write to outputStream
+            PrintWriter toIoTNodes = new PrintWriter(client.getOutputStream(), true); //Write to outputStream
             DataInputStream fromIoTNodes = new DataInputStream(client.getInputStream());//Read from input
 
-            //Get data-stream from IoT node and convert to SavedObject instance
-            SavedObject newObj = new SavedObject(fromIoTNodes);
+            //Send message to connected IoTNode whether Caching Node is accepting data stream
+            String msg_IoTNode = new FeedBackLoopMechanism().cacheNode_To_IoTNode_Msg(CacheNode.percentCacheSize());
 
-            //Check FeedBack loop to confirm Cloud-server status (Overloaded or Receiving)
-                //Set up connection to Cloud-Server
-                connect_CloudServer = new Socket("localhost", 56941);
+            if(msg_IoTNode.equals("loaded")){
+                toIoTNodes.println("Loaded");
+            }else{
+
+                if(msg_IoTNode.equals("active")){
+                    toIoTNodes.println("active");
+                    //Get data-stream from IoT node and convert to SavedObject instance
+                    SavedObject newObjToCache_or_Send_To_Server = new SavedObject(fromIoTNodes);
+
+                    //Check FeedBack loop to confirm Cloud-server status (Overloaded or Receiving)
+                    //Set up connection to Cloud-Server
+                    //connect_CloudServer = new Socket("localhost", 56941);
+
+                    String serverStatus = "Overloaded";
+
+                    if(serverStatus.equals("Overloaded")){ //Cache the sent object
+                        CacheNode.caching(newObjToCache_or_Send_To_Server);
+                    }
+
+
+                    if(serverStatus.equals("Receiving")){
+                        CacheNode.caching(newObjToCache_or_Send_To_Server);
+                        List<SavedObject> cachedObjects = CacheNode.uncaching();
+
+                        //TODO - loop through the list and send every stream to server
+                    }
+                }
+            }
+
+
+
 
                 //TODO - Create IO Stream for CacheNode to communicate to cloud server
 
-                //TODO - Create a class to implement the Feedback loop mechanism
-
-                //TODO - Create a Cloud-Server
-
-            String serverStatus = "";
-            if(serverStatus.equals("Overloaded")){ //Cache the sent object
-                CacheNode.caching(newObj);
-            }
-
-            if(serverStatus.equals("Receiving")){
-                List<SavedObject> cachedObjects = CacheNode.uncaching();
-            }
+                //TODO - Create a Cloud-Server - separate project
 
 
         }catch(Exception e){
