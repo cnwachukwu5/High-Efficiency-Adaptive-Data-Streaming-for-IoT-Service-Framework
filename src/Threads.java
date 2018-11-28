@@ -38,6 +38,8 @@ public class Threads implements Runnable {
 
                     if(serverStatus.equals("Overloaded")){ //Cache the sent object
                         CacheNode.caching(newObjToCache_or_Send_To_Server);
+                        System.out.println("object cached...");
+                        System.out.println(CacheNode.cacheSize());
                     }
 
 

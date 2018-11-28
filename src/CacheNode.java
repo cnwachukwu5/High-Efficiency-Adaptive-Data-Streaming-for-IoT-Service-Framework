@@ -46,6 +46,10 @@ public class CacheNode {
 
     }
 
+    public synchronized static int cacheSize(){
+        return cache.size();
+    }
+
     private static void init(){
         int port = 10567;
         try{
