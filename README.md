@@ -1,4 +1,4 @@
-# High Efficiency Adaptive Data Streaming for IoT Service Framework
+# High Efficiency Adaptive Data Streaming for IoT Service Framework - Caching Node
 
 Internet of Things (IoT) nodes transfer continous stream of data to cloud-based servers. Due to network congestion, there are packet losses, resulting to incomplete or corrupt data transfers. To avoid loss of data packets, a caching mechanism is required between the IoT nodes and cloud-servers.
 
