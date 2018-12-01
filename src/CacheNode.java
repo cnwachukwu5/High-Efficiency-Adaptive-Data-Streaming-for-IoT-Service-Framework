@@ -24,19 +24,19 @@ public class CacheNode {
          */
         SavedObject sentObject;
 
-        if((sentObject = cache.get(object.getFile().getName())) != null ){
+        if((sentObject = cache.get(object.getName())) != null ){
             System.out.println("Object already exists");
         }else{
-            cache.put(object.getFile().getName(), object);
+            cache.put(object.getName(), object);
         }
     }
 
-    public synchronized static List<SavedObject> uncaching() throws Exception{
+    public synchronized static List<SavedObject> uncaching(int percentage_Of_Items_To_Remove) throws Exception{
         /*
         add all SavedObject instances to a list, and return the list of SavedObjects to be sent to
         cloud-server
          */
-        return cache.cleanFIFO();
+        return cache.cleanFIFO(percentage_Of_Items_To_Remove);
     }
 
     public synchronized static double percentCacheSize(){
@@ -57,6 +57,27 @@ public class CacheNode {
         }catch (Exception e){
             e.printStackTrace();
         }
+
+    }
+
+    public synchronized static void increase_Cache_Size(int increase_value){
+        int increaseLimit = cache.getMaxNumItems() * increase_value/100;
+        cache.setMaxNumItems(cache.getMaxNumItems() + increaseLimit);
+        System.out.println("Increasing cache by: " + increase_value);
+    }
+
+    public synchronized static void decrease_Cache_Size(int decreaseSize){
+        if(cache.getMaxNumItems() > 10){
+            int diff = cache.getMaxNumItems() - cache.size();
+            int percent_diff = (diff/cache.getMaxNumItems()) * 100;
+
+            if(percent_diff >= 40){
+                int decreaseLimit = cache.getMaxNumItems() * decreaseSize/100;
+                cache.setMaxNumItems(cache.getMaxNumItems() - decreaseLimit);
+                System.out.println("decreasing cache size by " + decreaseSize);
+            }
+        }
+
 
     }
 
