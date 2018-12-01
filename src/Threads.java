@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Threads implements Runnable {
 
@@ -16,53 +18,71 @@ public class Threads implements Runnable {
 
         try{
             PrintWriter toIoTNodes = new PrintWriter(client.getOutputStream(), true); //Write to outputStream
-            DataInputStream fromIoTNodes = new DataInputStream(client.getInputStream());//Read from input
+            BufferedReader readIn = new BufferedReader(new InputStreamReader(client.getInputStream()));//Read IoTNode status
 
-            //Send message to connected IoTNode whether Caching Node is accepting data stream
-            String msg_IoTNode = new FeedBackLoopMechanism().cacheNode_To_IoTNode_Msg(CacheNode.percentCacheSize());
 
-            if(msg_IoTNode.equals("loaded")){
-                toIoTNodes.println("Loaded");
-            }else{
+            System.out.println("Connected to Cloud_Server");
+            System.out.println();
 
-                if(msg_IoTNode.equals("active")){
-                    toIoTNodes.println("active");
-                    //Get data-stream from IoT node and convert to SavedObject instance
-                    SavedObject newObjToCache_or_Send_To_Server = new SavedObject(fromIoTNodes);
+            while(true){
+                //Set up connection to Cloud-Server
+                connect_CloudServer = new Socket("localhost", 56941);
+                DataOutputStream sendToServer = new DataOutputStream(connect_CloudServer.getOutputStream());
+                BufferedReader readFromCloudServer = new BufferedReader(new InputStreamReader(connect_CloudServer.getInputStream()));
 
-                    //Check FeedBack loop to confirm Cloud-server status (Overloaded or Receiving)
-                    //Set up connection to Cloud-Server
-                    //connect_CloudServer = new Socket("localhost", 56941);
+                //Get IotNode status and Cloud Server status
+                String IoTNode_Status = readIn.readLine();
+                System.out.println("IoT_Node status: " + IoTNode_Status);
 
-                    String serverStatus = "Overloaded";
+                String cloud_Server_status = readFromCloudServer.readLine();
+                System.out.println("Cloud_Server Status: " + cloud_Server_status);
 
-                    if(serverStatus.equals("Overloaded")){ //Cache the sent object
-                        CacheNode.caching(newObjToCache_or_Send_To_Server);
-                        System.out.println("object cached...");
-                        System.out.println(CacheNode.cacheSize());
+                //Get data-stream from IoT node and convert to SavedObject instance
+                SavedObject newObjToCache_or_Send_To_Server = new SavedObject();
+                if(cloud_Server_status.equals("CONGESTED")){
+                    System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
+                    if(CacheNode.percentCacheSize() >= 80.0){
+                        if(IoTNode_Status.equals("HIGH_SEND")){
+                            CacheNode.increase_Cache_Size(30);
+                        }else if (IoTNode_Status.equals("MODERATE_SEND")){
+                            CacheNode.increase_Cache_Size(20);
+                        }else if (IoTNode_Status.equals("LOW")){
+                            CacheNode.increase_Cache_Size(10);
+                        }else{
+                            CacheNode.increase_Cache_Size(0);
+                        }
+                    }else{
+                        CacheNode.decrease_Cache_Size(30);
+
                     }
 
+                    CacheNode.caching(newObjToCache_or_Send_To_Server);
+                }else if (cloud_Server_status.equals("MODERATELY_CONGESTED")){
+                    CacheNode.caching(newObjToCache_or_Send_To_Server);
+                    //Remove items in cache by 30%
+                    List<SavedObject> cachedObjects = CacheNode.uncaching(30);
 
-                    if(serverStatus.equals("Receiving")){
-                        CacheNode.caching(newObjToCache_or_Send_To_Server);
-                        List<SavedObject> cachedObjects = CacheNode.uncaching();
-
-                        //TODO - loop through the list and send every stream to server
-                    }
+                }else if (cloud_Server_status.equals("NOT_CONGESTED")){
+                    CacheNode.caching(newObjToCache_or_Send_To_Server);
+                    List<SavedObject> cachedObjects = CacheNode.uncaching(100);
                 }
-            }
 
+                connect_CloudServer.close();
+                sendToServer.flush();
+                sendToServer.close();
+                readFromCloudServer.close();
 
-
-
-                //TODO - Create IO Stream for CacheNode to communicate to cloud server
-
-                //TODO - Create a Cloud-Server - separate project
-
+            }//End of while
 
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    private boolean check_IoTNodeStatus(String str){
+        Pattern pattern = Pattern.compile("\\d");
+        Matcher matcher = pattern.matcher(str);
+           return matcher.find();
     }
 
 }
