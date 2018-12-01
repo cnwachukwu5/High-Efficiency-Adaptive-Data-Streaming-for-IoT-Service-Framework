@@ -8,6 +8,7 @@ Project members: Sambath Pich and Cyprian Nwachukwu
  */
 import java.net.*;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +43,9 @@ public class CacheNode {
     public synchronized static double percentCacheSize(){
 
             int cacheSize = cache.size();
-            return ((cacheSize*1.0)/cache.getMaxNumItems()) * 100;
+        DecimalFormat df = new DecimalFormat("##.00");
+        double val = ((cacheSize*1.0)/cache.getMaxNumItems()) * 100;
+            return Double.parseDouble(df.format(val));
 
     }
 
@@ -67,9 +70,11 @@ public class CacheNode {
     }
 
     public synchronized static void decrease_Cache_Size(int decreaseSize){
+        System.out.println("Current cache capacity: " +cache.getMaxNumItems());
+
         if(cache.getMaxNumItems() > 10){
             int diff = cache.getMaxNumItems() - cache.size();
-            int percent_diff = (diff/cache.getMaxNumItems()) * 100;
+            double percent_diff = (diff*1.0/cache.getMaxNumItems()) * 100;
 
             if(percent_diff >= 40){
                 int decreaseLimit = cache.getMaxNumItems() * decreaseSize/100;
