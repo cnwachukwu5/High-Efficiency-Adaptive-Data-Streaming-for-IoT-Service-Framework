@@ -65,31 +65,54 @@ public class Cache<K,V> {
 
 
     @SuppressWarnings("unchecked")
-    public List<V> cleanFIFO(){
+    public List<V> cleanFIFO(int percentage_Of_Items_To_Remove){
 
         ArrayList<V> cacheObjectList = null;
+        ArrayList<K> cacheObjectList_Key = null;
+        ArrayList<V> sendingList = new ArrayList<>();
 
         synchronized(cacheMap){
             Set cacheSet = cacheMap.entrySet();//Return all cached items as a set
             Iterator itr = cacheSet.iterator(); //create an iterator to loop through the set
             cacheObjectList = new ArrayList<V>();
+            cacheObjectList_Key = new ArrayList<K>();
+
+
 
             V value = null;
+            K key = null;
             CachedObject c = null;
 
             while (itr.hasNext()) {
                 Map.Entry mentry = (Map.Entry)itr.next();
                 value = (V) mentry.getValue();
+                key = (K) mentry.getKey();
 
                 //Add item key to the list
                 cacheObjectList.add(value);
+                cacheObjectList_Key.add(key);
             }
 
-            //Removed the first object in cache (FIFO)
-            cacheMap.clear();
+
+            if (percentage_Of_Items_To_Remove < 100){
+                int number_of_items_clear_from_list = size() * percentage_Of_Items_To_Remove/100;
+                for(int i = 0; i < number_of_items_clear_from_list; i++){
+                    sendingList.add(cacheObjectList.get(i));
+                    cacheMap.remove(cacheObjectList_Key.get(i));
+                }
+            }else{
+                //Removed the all objects in cache (FIFO)
+                cacheMap.clear();
+            }
+
         }//End of synchronized block
 
-        return cacheObjectList;
+        //return cacheObjectList;
+        if (percentage_Of_Items_To_Remove < 100){
+            return sendingList;
+        }else{
+            return cacheObjectList;
+        }
     }
 
     public int getMaxNumItems() {
