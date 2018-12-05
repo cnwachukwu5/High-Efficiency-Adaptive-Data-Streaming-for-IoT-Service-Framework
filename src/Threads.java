@@ -20,7 +20,6 @@ public class Threads implements Runnable {
             PrintWriter toIoTNodes = new PrintWriter(client.getOutputStream(), true); //Write to outputStream
             BufferedReader readIn = new BufferedReader(new InputStreamReader(client.getInputStream()));//Read IoTNode status
 
-
             System.out.println("Connected to Cloud_Server");
             System.out.println();
 
@@ -40,31 +39,38 @@ public class Threads implements Runnable {
                 //Get data-stream from IoT node and convert to SavedObject instance
                 SavedObject newObjToCache_or_Send_To_Server = new SavedObject();
                 if(cloud_Server_status.equals("CONGESTED")){
-                    System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
-                    if(CacheNode.percentCacheSize() >= 80.0){
+                    CacheNode.caching(newObjToCache_or_Send_To_Server);
+
+                    if(CacheNode.percentCacheSize() >= 40.0){//This can be adjusted to get different behavior of the cache
                         if(IoTNode_Status.equals("HIGH_SEND")){
+
                             CacheNode.increase_Cache_Size(30);
+                            System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
+
                         }else if (IoTNode_Status.equals("MODERATE_SEND")){
+
                             CacheNode.increase_Cache_Size(20);
+                            System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
+
                         }else if (IoTNode_Status.equals("LOW")){
+
                             CacheNode.increase_Cache_Size(10);
-                        }else{
-                            CacheNode.increase_Cache_Size(0);
+                            System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
                         }
                     }else{
                         CacheNode.decrease_Cache_Size(30);
-
+                        System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
                     }
-
-                    CacheNode.caching(newObjToCache_or_Send_To_Server);
                 }else if (cloud_Server_status.equals("MODERATELY_CONGESTED")){
                     CacheNode.caching(newObjToCache_or_Send_To_Server);
                     //Remove items in cache by 30%
                     List<SavedObject> cachedObjects = CacheNode.uncaching(30);
+                    System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
 
                 }else if (cloud_Server_status.equals("NOT_CONGESTED")){
                     CacheNode.caching(newObjToCache_or_Send_To_Server);
                     List<SavedObject> cachedObjects = CacheNode.uncaching(100);
+                    System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
                 }
 
                 connect_CloudServer.close();
