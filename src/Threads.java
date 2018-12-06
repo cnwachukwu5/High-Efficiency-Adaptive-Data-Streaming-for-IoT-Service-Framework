@@ -39,22 +39,24 @@ public class Threads implements Runnable {
                 //Get data-stream from IoT node and convert to SavedObject instance
                 SavedObject newObjToCache_or_Send_To_Server = new SavedObject();
                 if(cloud_Server_status.equals("CONGESTED")){
-                    CacheNode.caching(newObjToCache_or_Send_To_Server);
 
                     if(CacheNode.percentCacheSize() >= 40.0){//This can be adjusted to get different behavior of the cache
                         if(IoTNode_Status.equals("HIGH_SEND")){
 
                             CacheNode.increase_Cache_Size(30);
+                            CacheNode.caching(newObjToCache_or_Send_To_Server);
                             System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
 
                         }else if (IoTNode_Status.equals("MODERATE_SEND")){
 
                             CacheNode.increase_Cache_Size(20);
+                            CacheNode.caching(newObjToCache_or_Send_To_Server);
                             System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
 
                         }else if (IoTNode_Status.equals("LOW")){
 
                             CacheNode.increase_Cache_Size(10);
+                            CacheNode.caching(newObjToCache_or_Send_To_Server);
                             System.out.println("percentCacheSize: " + CacheNode.percentCacheSize());
                         }
                     }else{
